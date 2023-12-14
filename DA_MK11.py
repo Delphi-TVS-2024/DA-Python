@@ -2,13 +2,13 @@
 # logging added
 # all tables looped  check url , file format ,
 # counter adding complete
-# create a log file  automatically and rotate files **
+# create a log file  automatically and rotate files | check again
 # object creation
 # if json file corrupted new json will create and logs will update
 # Creating custom csv file logging
 # create separate thread for Alerts
 # extra Spaces added while print filename for raw tables
-# visulaise json to keep in same as log file
+# visualise json to keep in same as log file
 
 
 import requests
@@ -21,7 +21,7 @@ import json, csv
 
 class StartSending:
 
-    def __init__(self, TOKEN_URL, TABLE_URL, FILE_DIR, gen_table_list, swift_table_list, rotating_logs):
+    def __init__(self, TOKEN_URL, TABLE_URL, FILE_DIR, gen_table_list, swift_table_list, rotating_logs, py_diag):
 
         self.TOKEN_URL = TOKEN_URL
         self.TABLE_URL = TABLE_URL
@@ -29,11 +29,16 @@ class StartSending:
         self.table_list = gen_table_list + swift_table_list
         self.token = 'x'
         self.line_name = self.FILE_DIR.split('/')[-2]
-        self.visualiser_json = FILE_DIR+'log_files/'+self.line_name + '_visual.json'
+        self.visualiser_json = FILE_DIR + 'log_files/' + self.line_name + '_visual.json'
         self.logfile_name = ''
         self.log_dir = FILE_DIR + 'Log_files/'
         self.log_rotate_count = rotating_logs
         self.swift_table_list = swift_table_list
+        self.py_diag = py_diag
+        self.xprint(f"{self.line_name} initialised  ")
+
+    def xprint(self, text):
+        if self.py_diag: print(text)
 
     def initial_setup(self):
         self.initialise_logs()
@@ -49,6 +54,7 @@ class StartSending:
             with open(self.visualiser_json, 'w') as json_file:
                 json.dump(visualiser_dict, json_file)
             self.datalog('GENERAL', 'JSON_CREATED', 'NEW VISUALISER JSON CREATED:' + str(self.visualiser_json))
+        self.xprint(f"json initialed for {self.line_name} ")
 
     def update_visualiser(self, table_name):
         try:
@@ -126,8 +132,6 @@ class StartSending:
             return x.status_code
         return x.status_code
 
-
-
     def sequence(self, table_list, delay=1):
         Z = lambda a: a + " " * (33 - len(a))
         while True:
@@ -153,13 +157,14 @@ class StartSending:
                             if self.send_file(max_file_path, table) == 200:
                                 self.datalog(table, 'FILE_SENT', table + '_' + str(formatted_timestamp) + '.csv')
                                 self.update_visualiser(table)
-                                print("|file_sent:", Z(table + '_' + str(formatted_timestamp) + '.csv')," ||  sent at:", datetime.now(), "|", self.line_name)
+                                print("|file_sent:", Z(table + '_' + str(formatted_timestamp) + '.csv'),
+                                      " ||  sent at:", datetime.now(), "|", self.line_name)
 
                                 os.remove(max_file_path)
                                 self.datalog(table, 'FILE_DELETED', max_file_path)
 
                         else:
-                            # print("no files to send for", folder_path)
+                            self.xprint(f"|no_file   : {Z(table)} ||  check at: {datetime.now()} | {self.line_name}")
                             pass
                         time.sleep(delay)
                     except Exception as e:
@@ -167,4 +172,3 @@ class StartSending:
                         print(e)
                 else:
                     self.datalog('GENERAL', 'FOLDER_NOT_FOUND', folder_path)
-
