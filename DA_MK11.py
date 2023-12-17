@@ -71,6 +71,7 @@ class StartSending:
         json_file_data[table_name][1] = int(json_file_data[table_name][1]) + 1
         with open(self.visualiser_json, 'w') as json_file:
             json.dump(json_file_data, json_file)
+            self.xprint(f"data dumped to json file {self.visualiser_json}")
 
     def initialise_logs(self):
         self.logfile_name = self.log_dir + self.line_name + '_' + str(datetime.now().date()) + '_logfile.csv'

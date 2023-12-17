@@ -5,16 +5,15 @@
 import DA_MK11 as dataaggregator
 import threading
 import os, json, time
-
+import sys
+import select
 # import Visualiser_MK2
 
 # imported_objects = globals()
-
+HOME_PATH = 'E:/IIOT/Config/RUN_DA.json'
 try:
-
     # print("This Program using {lib} as Core".format(lib=str(imported_objects['dataaggregator']).split(' ')[1]))
-
-    CONFIG = json.loads(open('RUN_DA.json').read())
+    CONFIG = json.loads(open(HOME_PATH).read())
     if CONFIG['run_status']:
         print("DA_MK11 as deploying....")
         IGNORE_LINE = CONFIG['IGNORE_LINE']
@@ -48,4 +47,20 @@ try:
         print("run_status was not 1")
 except Exception as e:
     print(e)
-    time.sleep(200)
+    print('###### press X to see config details ###')
+    inp =str( input() )
+    if inp == 'X':
+        example = {
+            "IGNORE_LINE": ["Config", "SUB01"],
+            "FOLDER_PATH": "E:/IIOT/",
+            "TOKEN_URL": "https://tealdatalogging.azurewebsites.net/api/Values/Check_login?device_id=2123-0377-21",
+            "TABLE_URL": "https://tealdatalogging.azurewebsites.net/api/Values/Insert",
+            "gen_table_list": ["CycleTime", "Alarm", "Loss", "Tool", "CTIndex"],
+            "swift_table_list": ["RawTable", "Alert"],
+            "rotating_logs": 7,
+            "run_status": 1,
+            "py_diag": 1
+        }
+        print(f"Example Json : {example}")
+    print("program exited")
+
