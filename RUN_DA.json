@@ -1,6 +1,6 @@
 {
   "IGNORE_LINE" : ["Config","SUB01"] ,
-  "FOLDER_PATH" : "E:/IIOT/" ,
+  "FOLDER_PATH" : "E:/IIOT/Config/" ,
   "TOKEN_URL" :"https://tealdatalogging.azurewebsites.net/api/Values/Check_login?device_id=2123-0377-21",
   "TABLE_URL": "https://tealdatalogging.azurewebsites.net/api/Values/Insert",
   "gen_table_list":[ "CycleTime", "Alarm", "Loss", "Tool", "CTIndex" ],

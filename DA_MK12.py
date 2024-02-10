@@ -124,19 +124,20 @@ class StartSending:
         bearer_token = self.token + ':2123-0377-21'
         headers = {'Authorization': f'Bearer {bearer_token}'}
         x = requests.post(send_url, headers=headers, data=csv_string_data)
-        if x.status_code == 401 or x.status_code == 206:
+        if x.status_code == 401:
             token = self.generate_token()
             # print("New token generated : XXXXXXXX")
             bearer_token = token + ':2123-0377-21'
             headers = {'Authorization': f'Bearer {bearer_token}'}
             x = requests.post(send_url, headers=headers, data=csv_string_data)
-            return x.status_code
+            return False
         print(x.status_code)
         return x.status_code
 
     def sequence(self, table_list, delay=1):
         Z = lambda a: a + " " * (33 - len(a))
         while True:
+          try:
             self.log_rotation()
             for table in table_list:
                 folder_path = self.FILE_DIR + table
@@ -156,7 +157,8 @@ class StartSending:
 
                             max_file_path = folder_path + '/' + table + '_' + str(formatted_timestamp) + '.csv'
 
-                            if self.send_file(max_file_path, table) == 200:
+                            status_code = self.send_file(max_file_path, table)
+                            if status_code == 200:
                                 self.datalog(table, 'FILE_SENT', table + '_' + str(formatted_timestamp) + '.csv')
                                 self.update_visualiser(table)
                                 print("|file_sent:", Z(table + '_' + str(formatted_timestamp) + '.csv'),
@@ -164,15 +166,15 @@ class StartSending:
 
                                 os.remove(max_file_path)
                                 self.datalog(table, 'FILE_DELETED', max_file_path)
+                            if status_code == 206:
+                                self.datalog(table, 'FILE_SENT', table + '_' + str(formatted_timestamp) + '.csv')
+                                self.update_visualiser(table)
+                                print("|file_sent:", Z(table + '_' + str(formatted_timestamp) + '.csv'),
+                                      " ||  sent at:", datetime.now(), "|", self.line_name)
+                                # send_z(max_file_path)
+                                os.remove(max_file_path)
+                                self.datalog(table, 'FILE_MOVED_TO_Z', max_file_path)
 
-                            # if self.send_file(max_file_path, table) == 200:
-                            #     self.datalog(table, 'FILE_SENT', table + '_' + str(formatted_timestamp) + '.csv')
-                            #     self.update_visualiser(table)
-                            #     print("|file_sent:", Z(table + '_' + str(formatted_timestamp) + '.csv'),
-                            #           " ||  sent at:", datetime.now(), "|", self.line_name)
-                            #
-                            #     os.remove(max_file_path)
-                            #     self.datalog(table, 'FILE_DELETED', max_file_path)
 
                         else:
                             self.xprint(f"|no_file   : {Z(table)} ||  check at: {datetime.now()} | {self.line_name}")
@@ -184,3 +186,5 @@ class StartSending:
                         print(e)
                 else:
                     self.datalog('GENERAL', 'FOLDER_NOT_FOUND', folder_path)
+          except:
+              self.datalog('GENERAL', 'some error', 'E101')

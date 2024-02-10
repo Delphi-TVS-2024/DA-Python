@@ -2,7 +2,7 @@
 # create seperat thrad for alerts
 
 
-import DA_MK11 as dataaggregator
+import DA_MK13 as dataaggregator
 import threading
 import os, json, time
 import sys
@@ -15,7 +15,6 @@ try:
     # print("This Program using {lib} as Core".format(lib=str(imported_objects['dataaggregator']).split(' ')[1]))
     CONFIG = json.loads(open(HOME_PATH).read())
     if CONFIG['run_status']:
-        print("DA_MK11 as deploying....")
         IGNORE_LINE = CONFIG['IGNORE_LINE']
         LINES = []
         FOLDER_PATH = CONFIG['FOLDER_PATH']
