@@ -1,0 +1,11 @@
+{
+    "MainPump-PLC": {
+        "plc_details": [ "192.168.46.1" ,0 , 1 ] ,
+        "tags" : {
+              "drive_current" : ["int" , 1090, 238],
+              "drive_temp" : ["int" , 2 , 230],
+              "motor_temp" : ["int" , 2 , 234]
+                 }
+              }
+   }
+
