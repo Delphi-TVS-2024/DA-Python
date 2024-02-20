@@ -1,8 +1,16 @@
-import os
 
 
-FILE_DIR = 'E:/IIOT/MNAL01/log_files/'
 
-print(os.path.dirname(os.path.dirname(FILE_DIR))
-)
+test = {
+    'hif':1 ,
+    'hello':'hi'
+}
 
+
+
+if 'hi' in test:print("yes")
+test['hiw'] = 5
+
+
+
+print(test)

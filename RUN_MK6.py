@@ -2,16 +2,29 @@
 # create seperat thrad for alerts
 
 
-import DA_MK13 as dataaggregator
+import DA_MK14 as dataaggregator
+from datetime import datetime
 import threading
 import os, json, time
-import sys
+import sys , psutil
 import select
-
+import requests
 
 # import Visualiser_MK2
 
+def run_diagnostics(url, delay_time):
+    while True:
+        try:
+            res = requests.post(url)
+            if res.status_code == 200:print(f"::::::::::::::::::::::::::::::::::::  Diagnostics successful at {datetime.now()}")
+            else:print(f"::::::::::::::::::::::::::::::::::::::  Diagnostics failed at {datetime.now()}")
+        except:print(f":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::  Failed to call Diagnostics at {datetime.now()}")
+        time.sleep(int(delay_time))
 
+
+def one_time_run():
+    diag_thread = threading.Thread(target=run_diagnostics, args=(CONFIG['DIAGNOSTICS_URL'], CONFIG['DIAGNOSTICS_CALL']))
+    diag_thread.start()
 
 
 # imported_objects = globals()
@@ -45,11 +58,14 @@ try:
                 target=lambda: globals()['obj_' + str(i)].sequence(CONFIG['swift_table_list']))
             globals()['gen_th_' + str(i)].start()
             globals()['swift_th_' + str(i)].start()
+        one_time_run()
     else:
         print("run_status was not 1")
+
+    # run_diagnostics(CONFIG['DIAGNOSTICS_URL'], CONFIG['DIAGNOSTICS_CALL'])
 except Exception as e:
-    print(e)
-    print('###### press X to see config details ###')
+    print("Error:",e)
+    print('###### press X to see sample config details ###')
     inp = str(input())
     if inp == 'X':
         example = {
@@ -65,3 +81,6 @@ except Exception as e:
         }
         print(f"Example Json : {example}")
     print("program exited")
+
+
+

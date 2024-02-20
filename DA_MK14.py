@@ -11,8 +11,7 @@
 # visualise json to keep in same as log file
 # dump folders crated for wromg data
 # Auto column addition for visualiser
-#diagnostics auto call
-#add pc diagnostics
+# diagnostics auto call
 
 import requests
 import os
@@ -20,7 +19,7 @@ import regex as re
 import time
 from datetime import datetime
 import json, csv
-import shutil
+import shutil, psutil
 
 
 class StartSending:
@@ -40,10 +39,46 @@ class StartSending:
         self.swift_table_list = swift_table_list
         self.py_diag = py_diag
         self.xprint(f"{self.line_name} initialised  ")
-        print(f"DA_MK13-Initialed || for {self.line_name}")
+        print(f"DA_MK14-Initialed || for {self.line_name}")
 
     def xprint(self, text):
         if self.py_diag: print(text)
+
+    def get_pc_diag_info(self):
+        pc_info = {
+            "Free_space(GB)": 'x',
+            "CPU %": ''}
+        input_date_string = str(datetime.now()).split('.')[0]
+        input_datetime = datetime.strptime(input_date_string, "%Y-%m-%d %H:%M:%S")
+        output_date_string = input_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+
+        disk_partitions = psutil.disk_partitions()
+        e_drive_partition = None
+        for partition in disk_partitions:
+            if partition.device.startswith('E:'):
+                drive_usage = psutil.disk_usage(partition.mountpoint)
+                free_space = drive_usage.total / (1024 * 1024 * 1024)
+                rounded = round(free_space, 4)
+                pc_info["Free_space(GB)"] = rounded
+        cpu_percent = psutil.cpu_percent(
+            interval=1)  # Interval is in seconds, it waits for 1 second to get CPU utilization
+        # print("CPU Utilization:", cpu_percent, "%")
+        pc_info["CPU %"] = cpu_percent
+        return pc_info, output_date_string
+
+    def add_pc_diagnostics(self, diag_file_path):
+        with open(diag_file_path, 'r', newline='') as file:
+            write_log_csv = csv.reader(file)
+            first_row = next(write_log_csv)
+            pc_info , time_stamp = self.get_pc_diag_info()
+
+        with open(diag_file_path, 'a', newline='') as file1:
+            for i in pc_info:
+                pc_diag_data = ['DataAggregator-PC', i, pc_info[i], datetime.now().date(), first_row[4], first_row[5],
+                                first_row[6], time_stamp, "DA"]
+                print(pc_diag_data)
+                write_log_csv1 = csv.writer(file1)
+                write_log_csv1.writerow(pc_diag_data)
 
     def initial_setup(self):
         self.initialise_logs()
@@ -175,6 +210,11 @@ class StartSending:
                                 formatted_timestamp = max(date_timestamps).strftime("%Y_%m_%dT%H_%M_%S")
 
                                 max_file_path = folder_path + '/' + table + '_' + str(formatted_timestamp) + '.csv'
+
+                                # Add diadnostic condition
+
+                                if table == 'Diagnostics' and self.line_name == 'HH01':
+                                    self.add_pc_diagnostics(max_file_path)
 
                                 status_code = self.send_file(max_file_path, table)
                                 if status_code == 200:

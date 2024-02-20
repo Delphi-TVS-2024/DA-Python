@@ -25,7 +25,7 @@ TABLES = CONFIG['gen_table_list'] + CONFIG['swift_table_list']
 
 tabview = customtkinter.CTkTabview(master=app)
 tabview.pack(anchor='nw', padx=40, pady=40)
-tabview.configure(fg_color='#B7B7B7', height=400, width=800)
+tabview.configure(fg_color='#B7B7B7', height=600, width=800)
 
 
 def button_event(line):
@@ -34,18 +34,23 @@ def button_event(line):
         json_data = json.loads(open(FOLDER_PATH + line + '/Log_files/' + line + str('_visual.json')).read())
         print(json_data)
         for i in TABLES:
-            folder_path = FOLDER_PATH + line + '/' + i
-            csv_files = glob.glob(os.path.join(folder_path, '*.csv'))
-            globals()[line + '_' + i + str('_time_stamp')].configure(text=json_data[i][0])
-            if i == 'RawTable':
-                datetime_object = datetime.strptime(str(json_data[i][0]), '%Y-%m-%d %H:%M:%S.%f')
-                diff = datetime.now()-datetime_object
-                if diff.seconds/60 > 2 :
-                    globals()[line + '_' + i + str('_time_stamp')].configure( fg_color = 'red' )
+            try:
+                folder_path = FOLDER_PATH + line + '/' + i
+                csv_files = glob.glob(os.path.join(folder_path, '*.csv'))
+                globals()[line + '_' + i + str('_time_stamp')].configure(text=json_data[i][0])
+                if i == 'RawTable':
+                    datetime_object = datetime.strptime(str(json_data[i][0]), '%Y-%m-%d %H:%M:%S.%f')
+                    diff = datetime.now() - datetime_object
+                    if diff.seconds / 60 > 5:
+                        globals()[line + '_' + i + str('_time_stamp')].configure(fg_color='red')
                 globals()[line + '_' + i + str('_req_count')].configure(text=json_data[i][1])
                 globals()[line + '_' + i + str('que')].configure(text=len(csv_files))
-    except:
+            except Exception as e:
+                print(e)
+                text = e
+    except Exception as e:
         text = F"Error Fecting data {str(FOLDER_PATH + line + '/Log_files/' + line + str('_visual.json'))}"
+
 
     globals()[line + '_label'].configure(text=text)
 
@@ -76,7 +81,6 @@ def create_ui(line):
                                                                                fg_color="transparent",
                                                                                font=("Helvetica", font_size, "bold"))
         globals()[line + '_' + i + str('_req_count')].place(x=x + 500, y=y)
-
 
         globals()[line + '_' + i + str('que')] = customtkinter.CTkLabel(tabview.tab(line), text="-",
                                                                         fg_color="transparent",
